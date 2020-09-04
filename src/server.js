@@ -1,12 +1,20 @@
- const express = require('express');
- const app = express();
+require('dotenv').config()
+const express = require('express')
+const knex = require('knex')
+const helmet = require('helmet')
+const cors = require('cors')
+const app = require('./app')
 
- const PORT = process.env.PORT || 3000;
+const { PORT, DATABASE_URL, CLIENT_ORIGIN } = require('./config')
 
- app.get('/api/*', (req, res) => {
-   res.json({ok: true});
- });
+const db = knex({
+    client: 'pg',
+    connection: DATABASE_URL,
+})
 
- app.listen(PORT, () => console.log(`Listening on port ${PORT}`));
+app.use(helmet())
+app.use(cors())
 
- module.exports = {app};
+app.set('db', db)
+
+app.listen(PORT, () => console.log(`Listening on port ${PORT}`))
