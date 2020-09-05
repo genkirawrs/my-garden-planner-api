@@ -6,24 +6,33 @@ const CalendarService = require('./calendar-services')
 const calendarRouter = express.Router()
 const jsonParser = express.json()
 
+const serializeCalNote = note => ({
+        id: note.id,
+	user_id: note.user_id,
+	day: note.day,
+	notes: xss(note.notes)
+})
+
 calendarRouter
-    .route('/')
+    .route('/month/:user_id/:start/:end')
     .get((req, res, next) => {
-	const start = 20200801;
-	const end = 20200831;
       CalendarService.getAllMonthNotes(
         req.app.get('db'),
-	start,
-	end
+	req.params.start,
+	req.params.end,
+	req.params.user_id
       )
       .then(items=> {
-          res.json(items)
+          if(items.length === 0){
+            return res.status(200).json([])
+          }
+          res.json(items.map(serializeCalNote))
       })
       .catch(next)
     })
 
 calendarRouter
-    .route('/:note_id')
+    .route('/:user_id/:note_id')
     .all((req, res, next) => {
       CalendarService.getNotesById(
         req.app.get('db'),
@@ -32,7 +41,7 @@ calendarRouter
         .then(item => {
           if (!item) {
             return res.status(404).json({
-              error: { message: `Notes not found` }
+              error: { message: `No note found for this day` }
             })
           }
           res.item = item
@@ -41,13 +50,22 @@ calendarRouter
         .catch(next)
     })
     .get((req, res, next) => {
-      res.json({
-            id: res.item.id,
-            notes: xss(res.item.notes),
-	    day: res.item.day,
-	    user_id: res.item.user_id,
-      })
+	res.json(serializeCalNote(res.item))
     })
+    .delete((req, res, next) => {
+      CalendarService.deleteNotes(
+        req.app.get('db'),
+        req.params.note_id
+      )
+        .then(() => {
+          res.status(204).end()
+        })
+        .catch(next)
+    })
+
+
+calendarRouter
+    .route('/add/:user_id/:day')
     .post(jsonParser, (req, res, next) => {
       const { user_id, day, notes} = req.body
       const newNote = { user_id, day, notes }
@@ -65,21 +83,14 @@ calendarRouter
        .then(note => {
          res
            .status(201)
-           .location(path.posix.join(req.originalUrl, `/calendar/${item.id}`))
-           .json(item)
+           .location(path.posix.join(req.originalUrl, `/calendar/${note.user_id}/${note.id}`))
+           .json(note)
        })
        .catch(next)
     })
-    .delete((req, res, next) => {
-      CalendarService.deleteNotes(
-        req.app.get('db'),
-        req.params.note_id
-      )
-        .then(() => {
-          res.status(204).end()
-        })
-        .catch(next)
-    })
+
+calendarRouter
+    .route('/edit/:user_id/:note_id')
     .patch(jsonParser, (req, res, next) => {
       const { user_id, day, notes } = req.body
       const noteToUpdate = { user_id, day, notes }

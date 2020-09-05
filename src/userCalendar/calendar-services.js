@@ -1,10 +1,11 @@
 const CalendarService = {
-    getAllMonthNotes(knex, monStart, monEnd){
+    getAllMonthNotes(knex, monStart, monEnd, user_id){
         return knex
 	.from('gp_user_calnotes')
 	.select('*')
 	.where('day','>=', monStart)
 	.where('day', '<=', monEnd)
+	.where('user_id', user_id)
     },
     getNotesById(knex, id){
         return knex.from('gp_user_calnotes').select('*').where('id', id).first()

@@ -116,7 +116,7 @@ describe(`plant service object`, function() {
 
 })
 
-describe.only(`favorite plants service object`, function() {
+describe(`favorite plants service object`, function() {
   let db
    
   before('make knex instance', () => {
@@ -311,7 +311,7 @@ describe.only(`favorite plants service object`, function() {
     })
   })
 
-  describe.only(`PATCH /api/plants/fav_plant/:user_id/:fav_id`, () => {
+  describe(`PATCH /api/plants/fav_plant/:user_id/:fav_id`, () => {
       const testFavs = makeFavoritesArray()
 
       beforeEach('insert favs', () => {
