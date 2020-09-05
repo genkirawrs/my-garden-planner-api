@@ -16,6 +16,7 @@ const PlantService = {
 	    .from('gp_user_favplants')
 	    .select('*')
 	    .where('id', fav_id)
+	    .first()
     },
     insertFavoritePlant(knex, newFav){
         return knex

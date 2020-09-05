@@ -22,7 +22,7 @@ const UserService = {
         })
     },
     getUserZone(knex,zipcode){
-	return knex.from('gp_grow_zones').select('*').where('zipcode', zipcode).first()
+	return knex.select('*').from('gp_zipcode_zones as z').join('gp_grow_zones as g', 'z.zone','=','g.zone').where({zipcode:zipcode}).first()
     },
 }
 

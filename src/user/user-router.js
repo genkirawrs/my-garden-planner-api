@@ -12,13 +12,25 @@ const serializeUser = user => ({
 })
 
 userRouter
-    .route('/')
+    .route('/:id')
+    .all((req, res, next) => {
+      UserService.getUserById(
+        req.app.get('db'),
+        req.params.id
+      ) 
+        .then(user => {
+          if (!user) {
+            return res.status(404).json({
+              error: { message: `Sorry, could not locate user information` }
+            })
+          }
+	  res.user = user
+          next()
+        })
+        .catch(next)
+    })
     .get((req, res, next) => {
-      UserService.getUserById(req.app.get('db'))
-      .then(events=> {
-          res.json(user.map(serializeUser))
-      })
-      .catch(next)
+          res.json(serializeUser(res.user))
     })
     .patch(jsonParser, (req, res, next) => {
       const { zipcode } = req.body
@@ -50,10 +62,17 @@ userRouter
       UserService.getUserZone(
         req.app.get('db'),
         req.params.zipcode
-      ).then(events=> {
-          res.json(events)
-      })
-      .catch(next)
+      )
+        .then(zone => {
+          if (!zone) {
+            return res.status(404).json({
+              error: { message: `Sorry, could not locate zone information` }
+            })
+          }
+          res.json(zone)
+          next()
+        })
+        .catch(next)
     })
 
 module.exports = userRouter

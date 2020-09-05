@@ -32,7 +32,7 @@ calendarRouter
         .then(item => {
           if (!item) {
             return res.status(404).json({
-              error: { message: `Note not found` }
+              error: { message: `Notes not found` }
             })
           }
           res.item = item
@@ -104,4 +104,4 @@ calendarRouter
        .catch(next)
     })
 
-module.exports = menuRouter
+module.exports = calendarRouter

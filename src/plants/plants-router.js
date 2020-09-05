@@ -6,6 +6,27 @@ const PlantService = require('./plants-services')
 const plantRouter = express.Router()
 const jsonParser = express.json()
 
+
+const serializePlant = plant => ({
+        id: plant.id,
+	name: xss(plant.name),
+	search_category: plant.search_category,
+	description: xss(plant.description),
+	image: xss(plant.image),
+	plant_type: xss(plant.plant_type),
+	sun: xss(plant.sun),
+	zones: xss(plant.zones),
+	soil: xss(plant.soil)
+})
+
+
+const serializeFavPlant = fav => ({
+	id: fav.id,
+	plant_id: fav.plant_id,
+	user_id: fav.user_id,
+	notes: xss(fav.notes)
+})
+
 plantRouter
     .route('/')
     .get((req, res, next) => {
@@ -13,7 +34,12 @@ plantRouter
         req.app.get('db')
       )
       .then(items=> {
-          res.json(items)
+	  if(items.length === 0){
+	    return res.status(404).json({
+		error: { message: `Sorry, no plants found` }
+	    })
+	  }
+          res.json(items.map(serializePlant))
       })
       .catch(next)
     })
@@ -26,13 +52,18 @@ plantRouter
 	req.params.category
       )
       .then(items=> {
-          res.json(items)
+          if(items.length === 0){
+            return res.status(404).json({ 
+                error: { message: `Sorry, no plants found` }
+            })
+          }
+          res.json(items.map(serializePlant))
       })
       .catch(next)
     })
 
 plantRouter
-    .route('/:plant_id')
+    .route('/plant/:plant_id')
     .all((req, res, next) => {
       PlantService.getPlantById(
         req.app.get('db'),
@@ -50,31 +81,39 @@ plantRouter
         .catch(next)
     })
     .get((req, res, next) => {
-      res.json({
-            id: res.item.id,
-            name: xss(res.item.name),
-            description: xss(res.item.description),
-	    image: xss(res.item.image),
-	    plant_type: xss(res.item.plant_type),
-	    sun: xss(res.item.sun),
-	    zones: xss(res.item.zones),
-	    soil: xss(res.item.soil),
-	    search_category: res.item.search_category,
-      })
+          res.json(serializePlant(res.item))
     })
 
-
 plantRouter
-  .route('/fav_plant/:user_id/:plant_id')
+  .route('/fav_plant/:user_id')
     .get((req, res, next) => {
-      PlantService.(
+      PlantService.getFavoritePlants(
         req.app.get('db'),
-	re
-        req.params.plant_id
-      ).then(events=> {
-          res.json(events)
+        req.params.user_id
+      ).then(plants=> {
+          if (plants.length === 0) {
+            return res.status(200).json([])
+          }
+          res.json(plants.map(serializeFavPlant))
       })
       .catch(next)
+    })
+
+plantRouter
+  .route('/fav_plant/:user_id/:fav_id')
+    .get((req, res, next) => {
+      PlantService.getFavoritePlant(
+        req.app.get('db'),
+        req.params.fav_id
+      ).then(plant=> {
+          if (!plant) {
+            return res.status(404).json({
+              error: { message: `Sorry, favorite plant not found` }
+            })
+          }
+          res.json(serializeFavPlant(plant))
+        })
+        .catch(next)
     })
     .post(jsonParser, (req, res, next) => {
       const { user_id, plant_id } = req.body
@@ -85,6 +124,11 @@ plantRouter
             error: { message: `Missing '${key}' in request body` }
           })
         }
+      }
+      if (!Number.isInteger(user_id) || !Number.isInteger(plant_id) ){
+	  return res.status(400).json({
+            error: { message: `Invalid field` }
+          })
       }
       PlantService.insertFavoritePlant(
         req.app.get('db'),
@@ -101,34 +145,47 @@ plantRouter
       const { id } = req.body
       PlantService.deleteFavoritePlant(
         req.app.get('db'),
-        req.params.id
+        req.params.fav_id
       )
         .then(() => {
           res.status(204).end()
         })
         .catch(next)
     })
+
     .patch(jsonParser, (req, res, next) => {
-      const { id, notes } = req.body
-      const favPlantToUpdate = { id, notes }
 
-      const numberOfValues = Object.values(eventToUpdate).filter(Boolean).length
-        if (numberOfValues === 0) {
-          return res.status(400).json({
-            error: {
-              message: `invalid field`
+      PlantService.getFavoritePlant(
+        req.app.get('db'),
+        req.params.fav_id
+      ).then(plant=> {
+          if (!plant) {
+            return res.status(404).json({
+              error: { message: `Sorry, favorite plant not found` }
+            })
+          }
+          const { id, notes } = req.body
+          const favPlantToUpdate = { id:id, notes: xss(notes) }
+
+          const numberOfValues = Object.values(favPlantToUpdate).filter(Boolean).length
+            if (numberOfValues === 0) {
+              return res.status(400).json({
+                error: {
+                  message: `invalid field`
+                }
+              })
             }
-          })
-        }
 
-      PlantService.updateFavoritePlant(
-         req.app.get('db'),
-         req.params.id,
-         favPlantToUpdate
-      )
-       .then(numRowsAffected => {
-         res.status(204).end()
-       })
-       .catch(next)
+          PlantService.updateFavoritePlant(
+             req.app.get('db'),
+             req.params.fav_id,
+             favPlantToUpdate
+          )
+          .then(numRowsAffected => {
+             res.status(204).end()
+          })
+          .catch(next)
+      })
     })
+
 module.exports = plantRouter
