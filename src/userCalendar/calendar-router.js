@@ -73,7 +73,7 @@ calendarRouter
       )
       .then(item=> {
           if( !item ){
-            return res.status(200).json([])
+            return res.status(200).json()
           }
           res.json(serializeCalNote(item))
       })
