@@ -44,7 +44,6 @@ userRouter
             }
           })
         }
-
       UserService.updateUser(
          req.app.get('db'),
          req.params.id,

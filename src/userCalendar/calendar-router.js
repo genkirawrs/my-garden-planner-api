@@ -63,6 +63,24 @@ calendarRouter
         .catch(next)
     })
 
+calendarRouter
+    .route('/note/:user_id/:day')
+    .get((req, res, next) => {
+      CalendarService.getNoteByDay(
+        req.app.get('db'),
+        req.params.user_id,
+        req.params.day
+      )
+      .then(item=> {
+          if( !item ){
+            return res.status(200).json([])
+          }
+          res.json(serializeCalNote(item))
+      })
+      .catch(next)
+    })
+
+
 
 calendarRouter
     .route('/add/:user_id/:day')

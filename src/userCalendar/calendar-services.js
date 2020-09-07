@@ -10,6 +10,9 @@ const CalendarService = {
     getNotesById(knex, id){
         return knex.from('gp_user_calnotes').select('*').where('id', id).first()
     },
+    getNoteByDay(knex,user_id, day){
+	return knex.from('gp_user_calnotes').select('*').where('user_id', user_id).where('day',day).first()
+    },
     insertNotes(knex, newNotes){
         return knex
         .insert(newNotes)

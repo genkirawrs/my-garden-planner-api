@@ -4,7 +4,7 @@ const app = require('../src/app')
 const { makeMaliciousCalendar,makeCalendarArray } = require('./calendar-fixtures')
 const { makeUsersArray } = require('./user-fixtures')
 
-describe.only(`user calendar service object`, function() {
+describe(`user calendar service object`, function() {
   let db
 
   before('make knex instance', () => {
@@ -177,7 +177,7 @@ describe.only(`user calendar service object`, function() {
     })
   })
 
-  describe.only(`PATCH /api/calendar/edit/:user_id/:note_id`, () => {
+  describe(`PATCH /api/calendar/edit/:user_id/:note_id`, () => {
       const testCalendar = makeCalendarArray()
           
       beforeEach('insert calendar notes', () => {

@@ -82,7 +82,7 @@ describe(`plant service object`, function() {
         const plant_id = 123456
         return supertest(app)
           .get(`/api/plants/plant/${plant_id}`)
-          .expect(404, { error: { message: `Plant entry not found` } })
+          .expect(200, [])
       })
     })
 
@@ -183,10 +183,10 @@ describe(`favorite plants service object`, function() {
 
   describe(`GET /api/plants/fav_plant/:user_id/:fav_id`, () => {
     context(`Given no favorite plants`, () => {
-      it(`responds with 404`, () => {
+      it(`responds with 200 and empty array`, () => {
         return supertest(app)
           .get(`/api/plants/fav_plant/1/12345`)
-          .expect(404, { error: { message: `Sorry, favorite plant not found` } })
+          .expect(200, [] )
       })
     })
 
@@ -218,7 +218,7 @@ describe(`favorite plants service object`, function() {
 
       it('responds with 200 and the specified favorite info', () => {
         return supertest(app)
-          .get(`/api/plants/fav_plant/1/2`)
+          .get(`/api/plants/fav_plant/1/4`)
           .expect(200, expectedPlants)
       })
     })
@@ -357,7 +357,7 @@ describe(`favorite plants service object`, function() {
           .expect(204)
           .then(res =>
             supertest(app)
-              .get(`/api/plants/fav_plant/1/${idToUpdate}`)
+              .get(`/api/plants/fav_plant/1/4`)
               .expect(expectedFav)
           )
       })

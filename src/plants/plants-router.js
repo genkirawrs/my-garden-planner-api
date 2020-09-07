@@ -71,9 +71,7 @@ plantRouter
       )
         .then(item => {
           if (!item) {
-            return res.status(404).json({
-              error: { message: `Plant entry not found` }
-            })
+            return res.status(200).json([])
           }
           res.item = item
           next()
@@ -104,12 +102,11 @@ plantRouter
     .get((req, res, next) => {
       PlantService.getFavoritePlant(
         req.app.get('db'),
+	req.params.user_id,
         req.params.fav_id
       ).then(plant=> {
           if (!plant) {
-            return res.status(404).json({
-              error: { message: `Sorry, favorite plant not found` }
-            })
+            return res.status(200).json([])
           }
           res.json(serializeFavPlant(plant))
         })
@@ -155,7 +152,7 @@ plantRouter
 
     .patch(jsonParser, (req, res, next) => {
 
-      PlantService.getFavoritePlant(
+      PlantService.getFavoritePlantById(
         req.app.get('db'),
         req.params.fav_id
       ).then(plant=> {
@@ -186,6 +183,7 @@ plantRouter
           })
           .catch(next)
       })
+      .catch(next)
     })
 
 module.exports = plantRouter

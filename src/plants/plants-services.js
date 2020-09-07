@@ -11,12 +11,20 @@ const PlantService = {
     getFavoritePlants(knex, user_id){
         return knex.from('gp_user_favplants').select('*').where('user_id', user_id)
     },
-    getFavoritePlant(knex,fav_id){
+    getFavoritePlant(knex,user_id,plant_id){
 	return knex
 	    .from('gp_user_favplants')
 	    .select('*')
-	    .where('id', fav_id)
+	    .where('user_id', user_id)
+	    .where('plant_id', plant_id)
 	    .first()
+    },
+    getFavoritePlantById(knex,fav_id){
+        return knex
+            .from('gp_user_favplants')
+            .select('*')
+            .where('id', fav_id)
+            .first()
     },
     insertFavoritePlant(knex, newFav){
         return knex
