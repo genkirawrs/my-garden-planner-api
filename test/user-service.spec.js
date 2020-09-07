@@ -104,7 +104,7 @@ describe(`user service object`, function() {
         const zipcode = 123456
         return supertest(app)
           .get(`/api/account/zone/${zipcode}`)
-          .expect(404, { error: { message: `Sorry, could not locate zone information` } })
+          .expect(204)
       })
     })
 

@@ -64,11 +64,9 @@ userRouter
       )
         .then(zone => {
           if (!zone) {
-            return res.status(404).json({
-              error: { message: `Sorry, could not locate zone information` }
-            })
+            return res.status(204).end()
           }
-          res.json(zone)
+          res.status(200).json(zone)
           next()
         })
         .catch(next)
